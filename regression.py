@@ -24,9 +24,11 @@ class _BaseRegression():
         """
         # transform observed raw data to data design matrix
         X = self.makeDataMatrix(x)
+        
         # compute coefficients by SVD
         u, s, w = svd(X,full_matrices=False)
         self._coeff = np.dot(w.T*(s**-1)[np.newaxis,:],np.dot(u.T,y))
+
         # evaluate fitting error        
         yy = np.dot(X,self._coeff)
         residual_variance = np.sum((y-yy)**2)
@@ -34,6 +36,7 @@ class _BaseRegression():
         print "fitting rmsd error = ", self._rmsd_error
         print "coefficients are"
         print self._coeff
+
         # plot fitting result if needed
         if plot:
             try:
