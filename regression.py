@@ -6,7 +6,26 @@ Created on Tue Aug  2 22:43:02 2011
 """
 
 import numpy as np
-from scipy.linalg import svd
+from scipy.linalg import svd, pinv, lstsq
+
+
+def _my_lstsq(X,y):
+    """
+    Calculate regression coefficients by Singular Value Decomposition 
+    """    
+    u, s, w = svd(X,full_matrices=False)
+    coeff = np.dot(w.T*(s**-1)[np.newaxis,:],np.dot(u.T,y))
+    return coeff
+
+def _my_lstsq2(X,y):
+    """
+    Calculate regression coefficients by psude-invers 
+    """    
+    coeff = np.dot(pinv(X),y)
+    return coeff
+
+def _scipy_lstsq(X,y):
+    return lstsq(X,y)[0]
 
 class _BaseRegression():
     """
@@ -18,7 +37,7 @@ class _BaseRegression():
         """
         pass
     
-    def fit(self,x,y,plot=False,variable=1,lw=5):
+    def fit(self,x,y,plot=False,variable=1,lw=5,lstsq_solver=_scipy_lstsq):
         """
         Calculate regression coefficients by Singular Value Decomposition 
         """
@@ -26,9 +45,8 @@ class _BaseRegression():
         X = self.makeDataMatrix(x)
         
         # compute coefficients by SVD
-        u, s, w = svd(X,full_matrices=False)
-        self._coeff = np.dot(w.T*(s**-1)[np.newaxis,:],np.dot(u.T,y))
-
+        self._coeff = lstsq_solver(X,y)
+        
         # evaluate fitting error        
         yy = np.dot(X,self._coeff)
         residual_variance = np.sum((y-yy)**2)
@@ -106,8 +124,9 @@ class SineRegression(_BaseRegression):
     
         
 if __name__ == "__main__":
-    coeffs = np.array([-3.0,2.0,1.0])
-    x = np.random.uniform(-2,0.5,1000)
-    y = coeffs[0] + x*coeffs[1] + x**2 * coeffs[2] + np.random.randn(len(x))*0.3
-    model = PolynomialRegression(3)
+    coeffs = np.array([-2.0,5.0,1.5,-0.7])
+    x = np.random.randn(3000)
+    y = coeffs[0] + x*coeffs[1] + x**2 * coeffs[2] + x**3 * coeffs[3]\
+        + np.random.randn(len(x))*0.7
+    model = PolynomialRegression(4)
     model.fit(x,y,plot=True)
