@@ -39,20 +39,37 @@ class _BaseRegression():
 
         # plot fitting result if needed
         if plot:
-            try:
-                import pylab
-            except ImportError:
-                print "matplotlib was not found"
-                print "plotting is omitted"
-                return
-            if x.ndim > 1:
-                xx = x[:,variable]
-            else:
-                xx = x
-            pylab.plot(xx,y,"o",label="observed")
-            pylab.plot(xx,yy,linewidth=lw,label="predicted")
-            pylab.legend()
-            pylab.show()
+            self.plot(x,y,variable,lw)            
+            
+    def plot(self,x,y,variable=1,lw=5):
+        
+        # import pylab        
+        try:
+            import pylab
+        except ImportError:
+            print "matplotlib was not found"
+            print "plotting is omitted"
+            return
+
+        # get view of x to be plotted        
+        if x.ndim > 1:
+            xx = x[:,variable]
+        else:
+            xx = x
+        
+        # make x-axis in the range of [min(xx),max(xx)]
+        x_range = np.linspace(xx.min(),xx.max(),len(xx))
+        
+        # obtain y value 
+        X = self.makeDataMatrix(x_range)
+        yy = np.dot(X,self._coeff)
+
+        # plot
+        pylab.plot(xx,y,"o",label="observed")
+        pylab.plot(x_range,yy,linewidth=lw,label="predicted")
+        pylab.legend()
+        pylab.show()
+        
         
     def predict(self,x):
         """
@@ -88,4 +105,9 @@ class SineRegression(_BaseRegression):
         return X
     
         
-        
+if __name__ == "__main__":
+    coeffs = np.array([-3.0,2.0,1.0])
+    x = np.random.uniform(-2,0.5,1000)
+    y = coeffs[0] + x*coeffs[1] + x**2 * coeffs[2] + np.random.randn(len(x))*0.3
+    model = PolynomialRegression(3)
+    model.fit(x,y,plot=True)

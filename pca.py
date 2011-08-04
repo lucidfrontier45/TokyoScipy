@@ -51,3 +51,17 @@ class PCA():
     def var_ratio(self):
         return  self.var / self.var.sum()
             
+            
+if __name__ == "__main__":
+    from scikits.learn.datasets import load_iris
+    import pylab
+   
+    iris = load_iris()  
+    model = PCA()
+    model.fit(iris.data)
+    pc = model.transform(iris.data)
+    for t in range(3):
+        mask = (iris.target == t)
+        pylab.plot(pc[mask,0],pc[mask,1],"o",label=iris.target_names[t])
+    pylab.legend()
+    pylab.show()

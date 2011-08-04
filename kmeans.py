@@ -91,7 +91,8 @@ class AnisotropicKMeans():
                 self.mu[c] = np.mean(X[mask],0)
                 self.cv[c] = np.cov(X[mask].T,ddof=0)
         
-    def fit(self, X, maxiter=100, thrs=1.0e-4, init=True,sort=True,plot=False):
+    def fit(self, X, maxiter=100, thrs=1.0e-4, init=True,sort=True,plot=False,
+            verbose=False):
         """
         Use iterative EM algorithm to learn parameters
         Input:
@@ -125,8 +126,9 @@ class AnisotropicKMeans():
                 print "%5dth iter, score = %8.3e, dscore = %8.3e > %8.3e converged" \
                     % (i, new_score, dscore, thrs)
                 break
-            print "%5dth iter, score = %8.3e, dscore = %8.3e" \
-                % (i, new_score, dscore)
+            if verbose:
+                print "%5dth iter, score = %8.3e, dscore = %8.3e" \
+                    % (i, new_score, dscore)
             score = new_score
 
             # performe M step
@@ -147,13 +149,28 @@ class AnisotropicKMeans():
         sort in decreasing order
         """
         sort_order = np.argsort(self.pi)[::-1]
-        self.pi = self.pi[sort_order]        
+        self.pi = self.pi[sort_order]  
         self.mu = self.mu[sort_order]
         self.cv = self.cv[sort_order]
-    
-    def showParams(self,show=True):
+        
+    def setParams(self,pi=None,mu=None,cv=None):
         """
-        show parameters
+        set model parameters
+        Input:
+            - pi [ndarray, shape(nclust)]
+            - mu [ndarray, shape(nclust,ndim)]
+            - cv [ndarray, shape(nclust,ndim,ndim)]
+        """
+        if pi != None:
+            self.pi = np.array(pi)
+        if mu != None:
+            self.mu = np.array(mu)
+        if cv != None:
+            self.cv = np.array(cv)
+    
+    def getParams(self,show=True):
+        """
+        get model parameters
         Input:
             - show [bool, optional] : if print params in stdout
         """
@@ -173,6 +190,13 @@ class AnisotropicKMeans():
         """
         codes, score = self._E_step(X)
         return codes
+        
+    def score(self,X):
+        """
+        Evaluate clustering result
+        """
+        codes, score = self._E_step(X)
+        return score
         
     def plot2d(self,X,ax1=0,ax2=1):
         """
@@ -196,9 +220,24 @@ class AnisotropicKMeans():
                
         
 if __name__ == "__main__":
-    m = np.array([5,-5.])
+    m = np.array([5,-7.])
     cv = np.array([[4.,1],[1,2]])
-    X = np.r_[np.random.randn(1000,2),np.random.multivariate_normal(m,cv,2000)]
-    model = AnisotropicKMeans(2)
-    model.fit(X,plot=True)
-    model.showParams()
+    X = np.r_[np.random.randn(10000,2),np.random.randn(5000,2)+[6,0.],\
+        np.random.multivariate_normal(m,cv,20000)]
+    
+    model = AnisotropicKMeans(3)
+
+    scores = []
+    params = []    
+    for i in xrange(10):    
+        model.fit(X)
+        scores.append(model.score(X))
+        params.append(model.getParams(False))
+    
+    print scores
+    print "best_score = ",max(scores)
+    best_param = params[np.argmax(scores)]
+    model.setParams(*best_param)
+    model.getParams()
+    model.plot2d(X)
+    
