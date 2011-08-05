@@ -106,9 +106,7 @@ class PolynomialRegression(_BaseRegression):
         self.degree = degree
         
     def makeDataMatrix(self,x):
-        X = np.empty((len(x),self.degree))
-        for d in xrange(self.degree):
-            X[:,d] = x**d
+        X = x[:,np.newaxis] ** np.arange(self.degree)[np.newaxis,:]
         return X
         
 class SineRegression(_BaseRegression):
@@ -126,7 +124,7 @@ class SineRegression(_BaseRegression):
 if __name__ == "__main__":
     coeffs = np.array([-2.0,5.0,1.5,-0.7])
     x = np.random.randn(3000)
-    y = coeffs[0] + x*coeffs[1] + x**2 * coeffs[2] + x**3 * coeffs[3]\
+    y = np.dot(x[:,np.newaxis] ** np.arange(len(coeffs))[np.newaxis,:],coeffs) \
         + np.random.randn(len(x))*0.7
     model = PolynomialRegression(4)
-    model.fit(x,y,plot=True)
+    model.fit(x,y,plot=True,lw=3)
