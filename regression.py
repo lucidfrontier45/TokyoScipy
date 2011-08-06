@@ -63,7 +63,7 @@ class _BaseRegression():
         
         # import pylab        
         try:
-            import pylab
+            import matplotlib.pyplot as plt
         except ImportError:
             print "matplotlib was not found"
             print "plotting is omitted"
@@ -83,10 +83,10 @@ class _BaseRegression():
         yy = np.dot(X,self._coeff)
 
         # plot
-        pylab.plot(xx,y,"o",label="observed")
-        pylab.plot(x_range,yy,linewidth=lw,label="predicted")
-        pylab.legend()
-        pylab.show()
+        plt.plot(xx,y,"o",label="observed")
+        plt.plot(x_range,yy,linewidth=lw,label="predicted")
+        plt.legend()
+        plt.show()
         
         
     def predict(self,x):

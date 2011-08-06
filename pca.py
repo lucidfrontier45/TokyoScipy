@@ -54,7 +54,7 @@ class PCA():
             
 if __name__ == "__main__":
     from scikits.learn.datasets import load_iris
-    import pylab
+    import matplotlib.pyplot as plt
    
     iris = load_iris()  
     model = PCA()
@@ -62,6 +62,6 @@ if __name__ == "__main__":
     pc = model.transform(iris.data)
     for t in range(3):
         mask = (iris.target == t)
-        pylab.plot(pc[mask,0],pc[mask,1],"o",label=iris.target_names[t])
-    pylab.legend()
-    pylab.show()
+        plt.plot(pc[mask,0],pc[mask,1],"o",label=iris.target_names[t])
+    plt.legend()
+    plt.show()
