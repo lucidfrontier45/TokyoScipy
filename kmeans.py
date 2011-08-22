@@ -36,7 +36,7 @@ class AnisotropicKMeans():
         for c in xrange(nclust):
             mask = (codes == c)
             self.mu[c] = np.mean(X[mask],0)
-            self.cv[c] = np.cov(X[mask].T,ddof=0) + self._min_cv           
+            self.cv[c] = np.cov(X[mask].T,bias=1) + self._min_cv           
 
     def _E_step(self, X, lnP_mat=None):
         """
@@ -91,7 +91,7 @@ class AnisotropicKMeans():
             # update parameters by data in the clusters
             else:
                 self.mu[c] = np.mean(X[mask],0)
-                self.cv[c] = np.cov(X[mask].T,ddof=0) + self.__min_cv
+                self.cv[c] = np.cov(X[mask].T,bias=1) + self.__min_cv
         
     def fit(self, X, maxiter=100, thrs=1.0e-4, init=True,sort=True,plot=False,
             verbose=False):

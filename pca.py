@@ -20,14 +20,14 @@ class PCA():
 
         # scale coefficient so that 
         if self._whiten:
-            v = np.std(X,0,ddof=0)
+            v = np.std(X,0,bias=1)
             X = X / v
             
         # performe matrix decomposition        
         if method.lower() == "evd":
             
             # use eigen value decomposition
-            cv = np.cov(X.T,ddof=0)
+            cv = np.cov(X.T,bias=1)
             eig_val, eig_vec = eigh(cv)
 
             # sort in decreasing order
