@@ -15,13 +15,15 @@ class AnisotropicKMeans():
     Anisotropic K-Means Class.
     This Class does K-Means clustering with non-unit covariance matrix
     """
-    def __init__(self, nclust=5):
+    def __init__(self, nclust=5, min_cv = 1.0e-6):
         # set maximum number of cluster
         self.nclust = nclust
+        self.__min_cv = min_cv
         
     def _initialize(self, X):
         nclust = self.nclust
         nobs, ndim = X.shape
+        self._min_cv = np.identity(ndim) * self.__min_cv
         
         # allocate mean vectors and covariance matrices
         self.mu = np.empty((nclust,ndim))
@@ -34,7 +36,7 @@ class AnisotropicKMeans():
         for c in xrange(nclust):
             mask = (codes == c)
             self.mu[c] = np.mean(X[mask],0)
-            self.cv[c] = np.cov(X[mask].T,ddof=0)            
+            self.cv[c] = np.cov(X[mask].T,ddof=0) + self._min_cv           
 
     def _E_step(self, X, lnP_mat=None):
         """
@@ -89,7 +91,7 @@ class AnisotropicKMeans():
             # update parameters by data in the clusters
             else:
                 self.mu[c] = np.mean(X[mask],0)
-                self.cv[c] = np.cov(X[mask].T,ddof=0)
+                self.cv[c] = np.cov(X[mask].T,ddof=0) + self.__min_cv
         
     def fit(self, X, maxiter=100, thrs=1.0e-4, init=True,sort=True,plot=False,
             verbose=False):
@@ -202,7 +204,7 @@ class AnisotropicKMeans():
         """
         2D scatter plot of the clustering result
         """
-        import pylab
+        import matplotlib.pyplot as plt
         
         # plotting symbols
         symbs = "o.hdx+"
@@ -214,30 +216,29 @@ class AnisotropicKMeans():
         for c in xrange(self.nclust):
             mask = (codes == c)
             symb = symbs[c/6]
-            pylab.plot(X[mask,ax1],X[mask,ax2],symb,label="%3dth cluster"%c)
-        pylab.legend()
-        pylab.show()
+            plt.plot(X[mask,ax1],X[mask,ax2],symb,label="%3dth cluster"%c)
+        plt.legend()
+        plt.show()
                
         
 if __name__ == "__main__":
     m = np.array([5,-7.])
     cv = np.array([[4.,1],[1,2]])
-    X = np.r_[np.random.randn(10000,2),np.random.randn(5000,2)+[6,0.],\
-        np.random.multivariate_normal(m,cv,20000)]
+    X = np.r_[np.random.randn(1000,2),np.random.randn(500,2)+[6,0.],\
+        np.random.multivariate_normal(m,cv,2000)]
     
-    model = AnisotropicKMeans(3)
+    models = [AnisotropicKMeans(3) for i in xrange(10)]
 
     scores = []
     params = []    
-    for i in xrange(10):    
+    for model in models:    
         model.fit(X)
         scores.append(model.score(X))
         params.append(model.getParams(False))
     
     print scores
     print "best_score = ",max(scores)
-    best_param = params[np.argmax(scores)]
-    model.setParams(*best_param)
-    model.getParams()
-    model.plot2d(X)
+    best_model = models[np.argmax(scores)]
+    best_model.getParams()
+    best_model.plot2d(X)
     
